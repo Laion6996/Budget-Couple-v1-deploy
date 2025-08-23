@@ -1,0 +1,15 @@
+<svg width="192" height="192" viewBox="0 0 192 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fond circulaire -->
+  <circle cx="96" cy="96" r="88" fill="#1f2937" stroke="#3b82f6" stroke-width="8"/>
+  
+  <!-- Symbole € stylisé -->
+  <path d="M 70 60 L 70 80 M 70 60 L 120 60 M 70 80 L 120 80 M 70 100 L 70 120 M 70 100 L 120 100 M 70 120 L 120 120" 
+        stroke="#10b981" stroke-width="6" stroke-linecap="round"/>
+  
+  <!-- Cœur pour "Couple" -->
+  <path d="M 96 140 Q 96 130 86 120 Q 76 110 66 120 Q 56 130 66 140 Q 76 150 86 140 Q 96 130 96 140 Z" 
+        fill="#ec4899"/>
+  
+  <!-- Texte "BC" -->
+  <text x="96" y="180" text-anchor="middle" fill="#ffffff" font-family="Arial, sans-serif" font-size="24" font-weight="bold">BC</text>
+</svg> 

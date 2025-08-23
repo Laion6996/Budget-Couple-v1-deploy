@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Styles de base pour le thème sombre */
+@layer base {
+  body {
+    @apply bg-gray-900 text-white;
+    /* Empêcher le scroll horizontal sur mobile */
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
+  /* Conteneur principal - empêcher le débordement */
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
+  }
+  
+  /* Amélioration de la lisibilité */
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold;
+  }
+  
+  /* Styles pour les liens */
+  a {
+    @apply transition-colors duration-200;
+  }
+  
+  /* Styles pour les boutons */
+  button {
+    @apply transition-all duration-200;
+  }
+}
+
+/* Utilitaires responsifs pour mobile */
+@layer utilities {
+  /* Conteneur mobile-first */
+  .mobile-container {
+    @apply w-full px-4 max-w-full overflow-x-hidden;
+  }
+  
+  /* Grille responsive */
+  .grid-mobile {
+    @apply grid-cols-1 gap-4;
+  }
+  
+  /* Cartes mobiles */
+  .card-mobile {
+    @apply w-full p-4 mx-0;
+  }
+  
+  /* Tableau responsive */
+  .table-mobile {
+    @apply w-full overflow-x-auto;
+  }
+  
+  /* Flex mobile */
+  .flex-mobile {
+    @apply flex-col;
+  }
+}
+
+/* Media queries pour desktop */
+@media (min-width: 768px) {
+  .mobile-container {
+    @apply px-6 max-w-6xl mx-auto;
+  }
+  
+  .grid-mobile {
+    @apply grid-cols-2;
+  }
+  
+  .flex-mobile {
+    @apply flex-row;
+  }
+}
+
+@media (min-width: 1024px) {
+  .grid-mobile {
+    @apply grid-cols-3;
+  }
+}
+
+@media (min-width: 1280px) {
+  .grid-mobile {
+    @apply grid-cols-4;
+  }
+}
+
+/* Correction spécifique pour le débordement horizontal */
+.overflow-fix {
+  overflow-x: hidden;
+  max-width: 100%;
+}
+
+/* Donut chart responsive */
+.donut-mobile {
+  @apply flex-col items-center;
+}
+
+.donut-desktop {
+  @apply flex-row items-stretch;
+}
+
+/* Légende mobile */
+.legend-mobile {
+  @apply grid grid-cols-2 gap-2 mt-4;
+}
+
+.legend-desktop {
+  @apply flex-1 pl-6;
+}
+
+/* Barre de scroll personnalisée pour la légende */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #374151;
+  border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #6B7280;
+  border-radius: 4px;
+  border: 1px solid #4B5563;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #9CA3AF;
+}
+
+/* Pour Firefox */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #6B7280 #374151;
+}
