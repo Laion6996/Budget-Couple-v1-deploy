@@ -172,25 +172,72 @@ export const useAppStore = create<AppState>()(
       setSalaires: (hoel: number, zelie: number) =>
         set({ salaireHoel: hoel, salaireZelie: zelie }),
 
-      ajouterCharge: (charge: Omit<Charge, 'id'>) =>
-        set((state) => ({
-          charges: [
-            ...state.charges,
-            { ...charge, id: Date.now().toString() },
-          ],
-        })),
+      ajouterCharge: (charge: Omit<Charge, 'id'>): string => {
+        console.log('🚀 [useAppStore] Début de ajouterCharge avec:', charge);
+        
+        // Validation des données
+        if (!charge.nom || charge.nom.trim() === '') {
+          console.error('❌ [useAppStore] Validation échouée: nom manquant');
+          throw new Error('Le nom de la charge est requis');
+        }
+        
+        const montant = Number(charge.montant);
+        if (isNaN(montant) || montant <= 0) {
+          console.error('❌ [useAppStore] Validation échouée: montant invalide', montant);
+          throw new Error('Le montant doit être un nombre positif');
+        }
 
-      modifierCharge: (id: string, charge: Partial<Charge>) =>
+        console.log('✅ [useAppStore] Validation réussie - nom:', charge.nom, 'montant:', montant);
+
+        // Génération d'un ID unique
+        const id = typeof crypto !== 'undefined' && crypto.randomUUID 
+          ? crypto.randomUUID() 
+          : `charge-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+        console.log('🔧 [useAppStore] ID généré:', id);
+
+        set((state) => {
+          const newCharges = [...state.charges, { ...charge, id, montant }];
+          console.log('🔧 [useAppStore] État mis à jour - ancien nombre de charges:', state.charges.length, 'nouveau:', newCharges.length);
+          console.log('🔧 [useAppStore] Nouvelles charges:', newCharges);
+          return {
+            charges: newCharges,
+          };
+        });
+
+        console.log('✅ [useAppStore] Charge ajoutée avec succès, ID retourné:', id);
+        return id;
+      },
+
+      modifierCharge: (id: string, charge: Partial<Charge>) => {
+        // Validation des données
+        if (charge.nom !== undefined && charge.nom.trim() === '') {
+          throw new Error('Le nom de la charge ne peut pas être vide');
+        }
+        
+        if (charge.montant !== undefined) {
+          const montant = Number(charge.montant);
+          if (isNaN(montant) || montant <= 0) {
+            throw new Error('Le montant doit être un nombre positif');
+          }
+        }
+
+        console.log('✏️ Charge modifiée:', { id, updates: charge });
+
         set((state) => ({
           charges: state.charges.map((c) =>
             c.id === id ? { ...c, ...charge } : c
           ),
-        })),
+        }));
+      },
 
-      supprimerCharge: (id: string) =>
+      supprimerCharge: (id: string) => {
+        console.log('🗑️ Charge supprimée:', { id });
+        
         set((state) => ({
           charges: state.charges.filter((c) => c.id !== id),
-        })),
+        }));
+      },
 
       ajouterBudget: (budget: Omit<Budget, 'id'>, personne: 'hoel' | 'zelie') =>
         set((state) => {

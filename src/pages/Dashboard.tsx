@@ -2,6 +2,8 @@ import React from 'react';
 import { useAppStore } from '@/stores/useAppStore';
 import { useChargesFixes } from '@hooks/useChargesFixes';
 import { useObjectifs } from '@hooks/useObjectifs';
+import { useCategoryDetails } from '@hooks/useCategoryDetails';
+import { useCategoryNavigation } from '@hooks/useCategoryNavigation';
 import { LazyDonutChart } from '@components/LazyDonutChart';
 import {
   sumRevenus,
@@ -27,6 +29,8 @@ export const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
   // Récupérer les données nécessaires pour le dashboard
   const { chargesFixes } = useChargesFixes();
   const { objectifs } = useObjectifs();
+  const { categoryDetails } = useCategoryDetails();
+  const { navigateToCategory } = useCategoryNavigation(navigateTo);
   
   // Calculs dérivés avec calc.ts
   const totalRevenus = sumRevenus(salaireHoel, salaireZelie);
@@ -39,11 +43,17 @@ export const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
   const resteZelieApresCharges = resteZelie(salaireZelie, versementZelieCharges);
 
   // Données pour le donut des dépenses communes
+  console.log('🔧 [Dashboard] Charges fixes reçues:', chargesFixes);
+  console.log('🔧 [Dashboard] Nombre de charges:', chargesFixes.length);
+  
   const dataDonutCharges = chargesFixes.map((charge, index) => ({
     name: charge.label,
     value: charge.montant,
-    color: ['#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#EF4444', '#06B6D4', '#84CC16'][index % 8]
+    color: ['#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#EF4444', '#06B6D4', '#84CC16', '#F97316', '#A855F7', '#14B8A6', '#F43F5E', '#8B5CF6', '#06B6D4', '#84CC16', '#F59E0B', '#10B981', '#EF4444', '#3B82F6', '#EC4899', '#F97316', '#A855F7', '#14B8A6', '#F43F5E', '#8B5CF6', '#06B6D4'][index % 25]
   }));
+  
+  console.log('🔧 [Dashboard] Données duut préparées:', dataDonutCharges);
+  console.log('🔧 [Dashboard] Nombre de catégories dans le donut:', dataDonutCharges.length);
 
   // Données pour les barres comparatives
   const dataBarresVersements = [
@@ -81,47 +91,47 @@ export const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
         </div>
 
         {/* Section 1: Cartes "À verser au commun" */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        <div className="grid grid-cols-1 gap-3 sm:gap-4 mb-6 sm:mb-8">
           {/* Carte Hoël */}
-          <div className="bg-gradient-to-br from-blue-900 to-blue-800 p-4 sm:p-6 rounded-xl border border-blue-700 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg sm:text-xl font-semibold text-blue-100">👨‍💼 Hoël</h3>
-              <div className="text-2xl sm:text-3xl font-bold text-blue-200">{pourcentageHoel}%</div>
+          <div className="bg-gradient-to-br from-blue-900 to-blue-800 p-3 sm:p-6 rounded-xl border border-blue-700 shadow-lg">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-xl font-semibold text-blue-100">👨‍💼 Hoël</h3>
+              <div className="text-xl sm:text-3xl font-bold text-blue-200">{pourcentageHoel}%</div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-blue-200 text-sm sm:text-base">Salaire:</span>
-                <span className="text-white font-bold text-sm sm:text-base">{salaireHoel.toLocaleString()}€</span>
+                <span className="text-blue-200 text-xs sm:text-base">Salaire:</span>
+                <span className="text-white font-bold text-xs sm:text-base">{salaireHoel.toLocaleString()}€</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-blue-200 text-sm sm:text-base">À verser:</span>
-                <span className="text-xl sm:text-2xl font-bold text-blue-100">{versementHoelCharges.toLocaleString()}€</span>
+                <span className="text-blue-200 text-xs sm:text-base">À verser:</span>
+                <span className="text-lg sm:text-2xl font-bold text-blue-100">{versementHoelCharges.toLocaleString()}€</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-blue-200 text-sm sm:text-base">Reste perso:</span>
-                <span className="text-base sm:text-lg font-semibold text-green-300">{resteHoelApresCharges.toLocaleString()}€</span>
+                <span className="text-blue-200 text-xs sm:text-base">Reste perso:</span>
+                <span className="text-sm sm:text-lg font-semibold text-green-300">{resteHoelApresCharges.toLocaleString()}€</span>
               </div>
             </div>
           </div>
 
           {/* Carte Zélie */}
-          <div className="bg-gradient-to-br from-green-900 to-green-800 p-4 sm:p-6 rounded-xl border border-green-700 shadow-lg">
-            <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg sm:text-xl font-semibold text-green-100">👩‍💼 Zélie</h3>
-              <div className="text-2xl sm:text-3xl font-bold text-green-200">{pourcentageZelie}%</div>
+          <div className="bg-gradient-to-br from-green-900 to-green-800 p-3 sm:p-6 rounded-xl border border-green-700 shadow-lg">
+            <div className="flex items-center justify-between mb-3 sm:mb-4">
+              <h3 className="text-base sm:text-xl font-semibold text-green-100">👩‍💼 Zélie</h3>
+              <div className="text-xl sm:text-3xl font-bold text-green-200">{pourcentageZelie}%</div>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2 sm:space-y-3">
               <div className="flex justify-between items-center">
-                <span className="text-green-200 text-sm sm:text-base">Salaire:</span>
-                <span className="text-white font-bold text-sm sm:text-base">{salaireZelie.toLocaleString()}€</span>
+                <span className="text-green-200 text-xs sm:text-base">Salaire:</span>
+                <span className="text-white font-bold text-xs sm:text-base">{salaireZelie.toLocaleString()}€</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-green-200 text-sm sm:text-base">À verser:</span>
-                <span className="text-xl sm:text-2xl font-bold text-green-100">{versementZelieCharges.toLocaleString()}€</span>
+                <span className="text-green-200 text-xs sm:text-base">À verser:</span>
+                <span className="text-lg sm:text-2xl font-bold text-green-100">{versementZelieCharges.toLocaleString()}€</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-green-200 text-sm sm:text-base">Reste perso:</span>
-                <span className="text-base sm:text-lg font-semibold text-green-300">{resteZelieApresCharges.toLocaleString()}€</span>
+                <span className="text-green-200 text-xs sm:text-base">Reste perso:</span>
+                <span className="text-sm sm:text-lg font-semibold text-green-300">{resteZelieApresCharges.toLocaleString()}€</span>
               </div>
             </div>
           </div>
@@ -135,27 +145,27 @@ export const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
           
           {objectifs && objectifs.length > 0 ? (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-                <div className="bg-blue-900 p-3 sm:p-4 rounded-lg border border-blue-700 text-center">
-                  <div className="text-xl sm:text-2xl font-bold text-blue-200">{totalObjectifs}</div>
-                  <div className="text-blue-300 text-xs sm:text-sm">Total Objectifs</div>
-                </div>
-                
-                <div className="bg-green-900 p-3 sm:p-4 rounded-lg border border-green-700 text-center">
-                  <div className="text-xl sm:text-2xl font-bold text-green-200">{objectifsAtteints}</div>
-                  <div className="text-green-300 text-xs sm:text-sm">Objectifs Atteints</div>
-                </div>
-                
-                <div className="bg-purple-900 p-3 sm:p-4 rounded-lg border border-purple-700 text-center">
-                  <div className="text-xl sm:text-2xl font-bold text-purple-200">{totalMontantCible.toLocaleString()}€</div>
-                  <div className="text-purple-300 text-xs sm:text-sm">Montant Total Cible</div>
-                </div>
-                
-                <div className="bg-orange-900 p-3 sm:p-4 rounded-lg border border-orange-700 text-center">
-                  <div className="text-xl sm:text-2xl font-bold text-orange-200">{totalEpargne.toLocaleString()}€</div>
-                  <div className="text-orange-300 text-xs sm:text-sm">Total Épargné</div>
-                </div>
-              </div>
+                             <div className="grid grid-cols-2 gap-2 sm:gap-4 mb-6">
+                 <div className="bg-blue-900 p-2 sm:p-4 rounded-lg border border-blue-700 text-center">
+                   <div className="text-lg sm:text-2xl font-bold text-blue-200">{totalObjectifs}</div>
+                   <div className="text-blue-300 text-xs sm:text-sm">Total Objectifs</div>
+                 </div>
+                 
+                 <div className="bg-green-900 p-2 sm:p-4 rounded-lg border border-green-700 text-center">
+                   <div className="text-lg sm:text-2xl font-bold text-green-200">{objectifsAtteints}</div>
+                   <div className="text-green-300 text-xs sm:text-sm">Objectifs Atteints</div>
+                 </div>
+                 
+                 <div className="bg-purple-900 p-2 sm:p-4 rounded-lg border border-purple-700 text-center">
+                   <div className="text-lg sm:text-2xl font-bold text-purple-200">{totalMontantCible.toLocaleString()}€</div>
+                   <div className="text-purple-300 text-xs sm:text-sm">Montant Total Cible</div>
+                 </div>
+                 
+                 <div className="bg-orange-900 p-2 sm:p-4 rounded-lg border border-orange-700 text-center">
+                   <div className="text-lg sm:text-2xl font-bold text-orange-200">{totalEpargne.toLocaleString()}€</div>
+                   <div className="text-orange-300 text-xs sm:text-sm">Total Épargné</div>
+                 </div>
+               </div>
 
               {/* Barre de progression globale */}
               <div className="mb-4">
@@ -202,12 +212,16 @@ export const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
             <h3 className="text-lg sm:text-xl font-semibold text-purple-400 mb-4 text-center">
               🍩 Dépenses Communes par Catégorie
             </h3>
+            
+
             {chargesFixes.length > 0 ? (
-              <div className="h-64 sm:h-80 overflow-hidden">
+              <div className="h-auto min-h-80 sm:min-h-96 overflow-visible">
                 <LazyDonutChart
                   data={dataDonutCharges}
                   totalBudget={totalCharges}
                   totalDepense={totalCharges}
+                  categoryDetails={categoryDetails}
+                  onCategoryClick={navigateToCategory}
                 />
               </div>
             ) : (
@@ -271,36 +285,36 @@ export const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
             ⚡ Accès Rapide
           </h3>
           
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid grid-cols-1 gap-3 sm:gap-6">
             <button 
               onClick={() => navigateTo('parametres')}
-              className="group bg-gradient-to-br from-green-900 to-green-800 p-4 sm:p-6 rounded-xl border border-green-700 hover:from-green-800 hover:to-green-700 transition-all duration-300 transform hover:scale-105"
+              className="group bg-gradient-to-br from-green-900 to-green-800 p-3 sm:p-6 rounded-xl border border-green-700 hover:from-green-800 hover:to-green-700 transition-all duration-300 transform hover:scale-105"
             >
               <div className="text-center">
-                <div className="text-3xl sm:text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">⚙️</div>
-                <h4 className="text-lg sm:text-xl font-semibold text-green-100 mb-2">Paramètres</h4>
+                <div className="text-2xl sm:text-4xl mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300">⚙️</div>
+                <h4 className="text-base sm:text-xl font-semibold text-green-100 mb-2">Paramètres</h4>
                 <p className="text-green-200 text-xs sm:text-sm">Salaires, charges, répartition</p>
               </div>
             </button>
 
             <button 
               onClick={() => navigateTo('perso')}
-              className="group bg-gradient-to-br from-purple-900 to-purple-800 p-4 sm:p-6 rounded-xl border border-purple-700 hover:from-purple-800 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
+              className="group bg-gradient-to-br from-purple-900 to-purple-800 p-3 sm:p-6 rounded-xl border border-purple-700 hover:from-purple-800 hover:to-purple-700 transition-all duration-300 transform hover:scale-105"
             >
               <div className="text-center">
-                <div className="text-3xl sm:text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">👥</div>
-                <h4 className="text-lg sm:text-xl font-semibold text-purple-100 mb-2">Budgets Personnels</h4>
+                <div className="text-2xl sm:text-4xl mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300">👥</div>
+                <h4 className="text-base sm:text-xl font-semibold text-purple-100 mb-2">Budgets Personnels</h4>
                 <p className="text-purple-200 text-xs sm:text-sm">Gestion des dépenses individuelles</p>
               </div>
             </button>
 
             <button 
               onClick={() => navigateTo('objectifs')}
-              className="group bg-gradient-to-br from-yellow-900 to-yellow-800 p-4 sm:p-6 rounded-xl border border-yellow-700 hover:from-yellow-800 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105 sm:col-span-2 lg:col-span-1"
+              className="group bg-gradient-to-br from-yellow-900 to-yellow-800 p-3 sm:p-6 rounded-xl border border-yellow-700 hover:from-yellow-800 hover:to-yellow-700 transition-all duration-300 transform hover:scale-105"
             >
               <div className="text-center">
-                <div className="text-3xl sm:text-4xl mb-3 group-hover:scale-110 transition-transform duration-300">🎯</div>
-                <h4 className="text-lg sm:text-xl font-semibold text-yellow-100 mb-2">Objectifs</h4>
+                <div className="text-2xl sm:text-4xl mb-2 sm:mb-3 group-hover:scale-110 transition-transform duration-300">🎯</div>
+                <h4 className="text-base sm:text-xl font-semibold text-yellow-100 mb-2">Objectifs</h4>
                 <p className="text-yellow-200 text-xs sm:text-sm">Suivi des objectifs d'épargne</p>
               </div>
             </button>
@@ -308,24 +322,24 @@ export const Dashboard: React.FC<DashboardProps> = ({ navigateTo }) => {
         </div>
 
         {/* Section 5: Statistiques rapides */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-          <div className="bg-blue-900 p-4 rounded-lg border border-blue-700 text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-blue-200">{totalRevenus.toLocaleString()}€</div>
+        <div className="grid grid-cols-2 gap-2 sm:gap-4">
+          <div className="bg-blue-900 p-2 sm:p-4 rounded-lg border border-blue-700 text-center">
+            <div className="text-lg sm:text-3xl font-bold text-blue-200">{totalRevenus.toLocaleString()}€</div>
             <div className="text-blue-300 text-xs sm:text-sm">Total Revenus</div>
           </div>
           
-          <div className="bg-red-900 p-4 rounded-lg border border-red-700 text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-red-200">{totalCharges.toLocaleString()}€</div>
+          <div className="bg-red-900 p-2 sm:p-4 rounded-lg border border-red-700 text-center">
+            <div className="text-lg sm:text-3xl font-bold text-red-200">{totalCharges.toLocaleString()}€</div>
             <div className="text-red-300 text-xs sm:text-sm">Total Charges</div>
           </div>
           
-          <div className="bg-green-900 p-4 rounded-lg border border-green-700 text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-green-200">{(totalRevenus - totalCharges).toLocaleString()}€</div>
+          <div className="bg-green-900 p-2 sm:p-4 rounded-lg border border-green-700 text-center">
+            <div className="text-lg sm:text-3xl font-bold text-green-200">{(totalRevenus - totalCharges).toLocaleString()}€</div>
             <div className="text-green-300 text-xs sm:text-sm">Reste Total</div>
           </div>
           
-          <div className="bg-purple-900 p-4 rounded-lg border border-purple-700 text-center">
-            <div className="text-2xl sm:text-3xl font-bold text-purple-200">{chargesFixes.length}</div>
+          <div className="bg-purple-900 p-2 sm:p-4 rounded-lg border border-purple-700 text-center">
+            <div className="text-lg sm:text-3xl font-bold text-purple-200">{chargesFixes.length}</div>
             <div className="text-purple-300 text-xs sm:text-sm">Charges Actives</div>
           </div>
         </div>

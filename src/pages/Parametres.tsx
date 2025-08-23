@@ -3,6 +3,7 @@ import { useAppStore } from '@/stores/useAppStore';
 import { useChargesFixes } from '@hooks/useChargesFixes';
 import { SalaireInput } from '@components/SalaireInput';
 import { ChargeFixeRow } from '@components/ChargeFixeRow';
+import { useToast } from '@components/Toast';
 import {
   sumRevenus,
   pctHoel,
@@ -29,6 +30,16 @@ export const Parametres: React.FC = () => {
     commencerEdition,
     sauvegarderCharge,
   } = useChargesFixes();
+  
+  const { ToastContainer } = useToast();
+  
+  // Logs pour debug
+  console.log('🔧 [Parametres] État actuel:', {
+    chargesFixes,
+    editingId,
+    errors,
+    totalCharges
+  });
 
   // Calculs dérivés avec calc.ts
   const totalRevenus = sumRevenus(salaireHoel, salaireZelie);
@@ -217,6 +228,7 @@ export const Parametres: React.FC = () => {
                   onEdit={commencerEdition}
                   onSave={sauvegarderCharge}
                   onDelete={supprimerChargeFixe}
+                  isMobileView={true}
                 />
               ))}
               
@@ -313,6 +325,9 @@ export const Parametres: React.FC = () => {
           </div>
         </div>
       </div>
+      
+      {/* Container des toasts */}
+      <ToastContainer />
     </div>
   );
 };

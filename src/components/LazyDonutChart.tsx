@@ -14,17 +14,21 @@ interface LazyDonutChartProps {
   totalBudget: number;
   totalDepense: number;
   delay?: number;
+  categoryDetails?: Record<string, any[]>;
+  onCategoryClick?: (categoryName: string) => void;
 }
 
 /**
  * Wrapper lazy pour DonutChart avec idle mounting
  * Ne charge le composant qu'après que le thread principal soit libre
  */
-export const LazyDonutChart: React.FC<LazyDonutChartProps> = ({ 
-  data, 
-  totalBudget, 
+export const LazyDonutChart: React.FC<LazyDonutChartProps> = ({
+  data,
+  totalBudget,
   totalDepense,
-  delay = 200 
+  delay = 200,
+  categoryDetails,
+  onCategoryClick
 }) => {
   const isReady = useMountIdle(delay);
 
@@ -34,11 +38,13 @@ export const LazyDonutChart: React.FC<LazyDonutChartProps> = ({
 
   return (
     <React.Suspense fallback={<ChartSkeleton />}>
-      <DonutChart 
-        data={data} 
-        totalBudget={totalBudget} 
-        totalDepense={totalDepense}
-      />
+              <DonutChart
+          data={data}
+          totalBudget={totalBudget}
+          totalDepense={totalDepense}
+          categoryDetails={categoryDetails}
+          onCategoryClick={onCategoryClick}
+        />
     </React.Suspense>
   );
 };

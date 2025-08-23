@@ -27,14 +27,14 @@ export const Perso: React.FC = () => {
   const dataDonutHoel = budgetsHoel.map((budget, index) => ({
     name: budget.nom,
     value: budget.depense,
-    color: ['#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981'][index % 5]
+    color: ['#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B', '#10B981', '#EF4444', '#06B6D4', '#84CC16', '#F97316', '#A855F7', '#14B8A6', '#F43F5E', '#8B5CF6', '#06B6D4', '#84CC16', '#F59E0B', '#10B981', '#EF4444', '#3B82F6', '#EC4899', '#F97316', '#A855F7', '#14B8A6', '#F43F5E', '#8B5CF6'][index % 25]
   }));
 
-  // Données pour le donut Zélie
+  // Données pour le donut Zélie  
   const dataDonutZelie = budgetsZelie.map((budget, index) => ({
     name: budget.nom,
     value: budget.depense,
-    color: ['#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#3B82F6'][index % 5]
+    color: ['#10B981', '#F59E0B', '#EC4899', '#8B5CF6', '#3B82F6', '#EF4444', '#06B6D4', '#84CC16', '#F97316', '#A855F7', '#14B8A6', '#F43F5E', '#8B5CF6', '#06B6D4', '#84CC16', '#F59E0B', '#10B981', '#EF4444', '#3B82F6', '#EC4899', '#F97316', '#A855F7', '#14B8A6', '#F43F5E', '#8B5CF6'][index % 25]
   }));
 
   return (
@@ -100,7 +100,7 @@ export const Perso: React.FC = () => {
               📊 Dépenses Hoël
             </h3>
             {budgetsHoel.length > 0 ? (
-              <div className="h-64">
+              <div className="h-auto min-h-64">
                 <LazyDonutChart
                   data={dataDonutHoel}
                   totalBudget={totalMontantHoel}
@@ -121,7 +121,7 @@ export const Perso: React.FC = () => {
               📊 Dépenses Zélie
             </h3>
             {budgetsZelie.length > 0 ? (
-              <div className="h-64">
+              <div className="h-auto min-h-64">
                 <LazyDonutChart
                   data={dataDonutZelie}
                   totalBudget={totalMontantZelie}

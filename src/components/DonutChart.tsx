@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { formatMoney } from '@utils/money';
 import { useWindowSize } from '@hooks/useWindowSize';
+import { CategoryDetailModal, type CategoryDetail } from './CategoryDetailModal';
 
 interface DonutChartProps {
   data: Array<{
@@ -11,6 +12,8 @@ interface DonutChartProps {
   }>;
   totalBudget: number;
   totalDepense: number;
+  onCategoryClick?: (categoryName: string) => void;
+  categoryDetails?: Record<string, CategoryDetail[]>;
 }
 
 // Tooltip personnalisé pour afficher les informations de manière claire
@@ -64,10 +67,21 @@ const LegendTooltip: React.FC<{
   );
 };
 
-const DonutChart: React.FC<DonutChartProps> = ({ data, totalBudget }) => {
+const DonutChart: React.FC<DonutChartProps> = ({ 
+  data, 
+  totalBudget, 
+  onCategoryClick, 
+  categoryDetails 
+}) => {
+  console.log('🔧 [DonutChart] Données reçues:', data);
+  console.log('🔧 [DonutChart] Nombre de catégories:', data.length);
+  console.log('🔧 [DonutChart] Total budget:', totalBudget);
+  
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [legendTooltipData, setLegendTooltipData] = useState<{ name: string; value: number; color: string; totalBudget: number } | null>(null);
   const [legendTooltipPosition, setLegendTooltipPosition] = useState<{ x: number; y: number } | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { isMobile } = useWindowSize();
 
   // Préparer les données pour le graphique avec le total pour les calculs
@@ -96,6 +110,24 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, totalBudget }) => {
     setLegendTooltipPosition(null);
   };
 
+  const handleCategoryClick = (categoryName: string) => {
+    console.log('🎯 [DonutChart] Clic sur catégorie:', categoryName);
+    console.log('🎯 [DonutChart] onCategoryClick:', !!onCategoryClick);
+    console.log('🎯 [DonutChart] categoryDetails:', !!categoryDetails);
+    console.log('🎯 [DonutChart] categoryDetails[categoryName]:', categoryDetails?.[categoryName]);
+    
+    if (onCategoryClick) {
+      console.log('🎯 [DonutChart] Appel de onCategoryClick');
+      onCategoryClick(categoryName);
+    } else if (categoryDetails && categoryDetails[categoryName]) {
+      console.log('🎯 [DonutChart] Ouverture du modal pour:', categoryName);
+      setSelectedCategory(categoryName);
+      setIsModalOpen(true);
+    } else {
+      console.log('🎯 [DonutChart] Aucune action - pas de données pour:', categoryName);
+    }
+  };
+
   const handlePieLeave = () => {
     setHoveredIndex(null);
   };
@@ -108,17 +140,17 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, totalBudget }) => {
           {/* Donut Chart centré - Taille optimisée mobile */}
           <div className="flex justify-center">
             <div className="relative">
-              {/* Container du donut avec taille fixe et responsive */}
-              <div className="h-48 w-48 sm:h-56 sm:w-56">
+              {/* Container du donut avec taille adaptative selon le nombre de catégories */}
+              <div className={`${chartData.length > 8 ? 'h-56 w-56 sm:h-64 sm:w-64' : 'h-48 w-48 sm:h-56 sm:w-56'}`}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={chartData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={45}
-                      outerRadius={80}
-                      paddingAngle={2}
+                      innerRadius={chartData.length > 8 ? 40 : 45}
+                      outerRadius={chartData.length > 8 ? 90 : 80}
+                      paddingAngle={chartData.length > 8 ? 1 : 2}
                       dataKey="value"
                       onMouseEnter={handlePieHover}
                       onMouseLeave={handlePieLeave}
@@ -153,38 +185,39 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, totalBudget }) => {
           </div>
 
           {/* Légende mobile - Design inspiré de Hello Watt */}
-          <div className="bg-gray-800 border border-gray-600 rounded-xl p-4">
+          <div className="bg-gray-800 border border-gray-600 rounded-xl p-3 sm:p-4">
             {/* En-tête de la légende */}
-            <div className="flex items-center justify-between mb-4 pb-3 border-b border-gray-600">
-              <h4 className="text-base font-semibold text-white">📊 Répartition des dépenses</h4>
-              <span className="text-xs text-gray-400 bg-gray-700 px-3 py-1 rounded-full">
+            <div className="flex items-center justify-between mb-3 sm:mb-4 pb-2 sm:pb-3 border-b border-gray-600">
+              <h4 className="text-sm sm:text-base font-semibold text-white">📊 Répartition</h4>
+              <span className="text-xs text-gray-400 bg-gray-700 px-2 sm:px-3 py-1 rounded-full">
                 {chartData.length} catégorie{chartData.length > 1 ? 's' : ''}
               </span>
             </div>
 
             {/* Zone de scroll avec toutes les catégories */}
-            <div className="max-h-64 overflow-y-auto space-y-3 pr-2 custom-scrollbar">
+            <div className={`${chartData.length > 8 ? 'max-h-64 sm:max-h-80' : 'max-h-56 sm:max-h-64'} overflow-y-auto space-y-2 sm:space-y-3 pr-2 custom-scrollbar`}>
               {chartData.map((item, index) => (
                 <div
                   key={index}
-                  className={`flex items-center justify-between p-3 rounded-lg cursor-pointer transition-all duration-300 ${
+                  className={`flex items-center justify-between p-2 sm:p-3 rounded-lg cursor-pointer transition-all duration-300 ${
                     hoveredIndex === index
                       ? 'bg-gray-700 border border-gray-500 shadow-lg scale-105'
                       : 'hover:bg-gray-700/50 bg-gray-750'
                   }`}
                   onMouseEnter={(e) => handleLegendHover(item, index, e)}
                   onMouseLeave={handleLegendLeave}
+                  onClick={() => handleCategoryClick(item.name)}
                 >
                   {/* Icône et nom de la catégorie */}
-                  <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <div className="flex items-center space-x-1 min-w-0 flex-1 overflow-hidden">
                     <div
-                      className={`w-4 h-4 rounded-sm flex-shrink-0 transition-all duration-300 ${
+                      className={`w-3 h-3 rounded-sm flex-shrink-0 transition-all duration-300 ${
                         hoveredIndex === index ? 'scale-125' : 'scale-100'
                       }`}
                       style={{ backgroundColor: item.color }}
                     />
                     <span
-                      className={`text-sm font-medium transition-colors duration-300 truncate ${
+                      className={`text-xs sm:text-sm font-medium transition-colors duration-300 truncate ${
                         hoveredIndex === index ? 'text-white' : 'text-gray-300'
                       }`}
                     >
@@ -193,32 +226,27 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, totalBudget }) => {
                   </div>
 
                   {/* Montant et pourcentage */}
-                  <div className="text-right flex-shrink-0 ml-3">
-                    <span
-                      className={`text-sm font-bold transition-colors duration-300 ${
-                        hoveredIndex === index ? 'text-white' : 'text-white'
-                      }`}
-                    >
+                  <div className="text-right flex-shrink-0 ml-2 sm:ml-3 min-w-0 pr-1">
+                    <div className="text-xs sm:text-sm font-bold text-white">
                       {formatMoney(item.value)}
-                    </span>
-                    <span
-                      className={`text-xs ml-2 transition-colors duration-300 ${
-                        hoveredIndex === index ? 'text-gray-200' : 'text-gray-400'
-                      }`}
-                    >
+                    </div>
+                    <div className="text-xs text-gray-400">
                       {((item.value / totalBudget) * 100).toFixed(1)}%
-                    </span>
+                    </div>
                   </div>
                 </div>
               ))}
             </div>
 
-            {/* Indicateur de scroll */}
-            <div className="text-center mt-3 pt-3 border-t border-gray-600">
-              <div className="text-xs text-gray-500 flex items-center justify-center space-x-2">
+            {/* Indicateur de scroll et nombre de catégories */}
+            <div className="text-center mt-2 sm:mt-3 pt-2 sm:pt-3 border-t border-gray-600">
+              <div className="text-xs text-gray-500 flex items-center justify-center space-x-1 sm:space-x-2 mb-1 sm:mb-2">
                 <span>📱</span>
-                <span>Scroll pour voir toutes les catégories</span>
+                <span className="text-xs">Scroll pour voir toutes les catégories</span>
                 <span>📱</span>
+              </div>
+              <div className="text-xs text-gray-400">
+                {chartData.length} catégorie{chartData.length > 1 ? 's' : ''} au total
               </div>
             </div>
           </div>
@@ -229,16 +257,16 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, totalBudget }) => {
           {/* Donut Chart - Taille adaptée desktop */}
           <div className="flex-shrink-0">
             <div className="relative">
-              <div className="h-64 w-64">
+              <div className={`${chartData.length > 8 ? 'h-80 w-80' : 'h-64 w-64'}`}>
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={chartData}
                       cx="50%"
                       cy="50%"
-                      innerRadius={50}
-                      outerRadius={100}
-                      paddingAngle={3}
+                      innerRadius={chartData.length > 8 ? 45 : 50}
+                      outerRadius={chartData.length > 8 ? 120 : 100}
+                      paddingAngle={chartData.length > 8 ? 2 : 3}
                       dataKey="value"
                       onMouseEnter={handlePieHover}
                       onMouseLeave={handlePieLeave}
@@ -274,7 +302,7 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, totalBudget }) => {
 
           {/* Légende desktop - Layout vertical compact */}
           <div className="flex-1 min-w-0">
-            <h4 className="text-lg font-semibold text-white mb-4">📊 Répartition des dépenses</h4>
+            <h4 className="text-lg font-semibold text-white mb-4">📊 Répartition</h4>
             <div className="space-y-3">
               {chartData.map((item, index) => (
                 <div
@@ -286,10 +314,11 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, totalBudget }) => {
                   }`}
                   onMouseEnter={(e) => handleLegendHover(item, index, e)}
                   onMouseLeave={handleLegendLeave}
+                  onClick={() => handleCategoryClick(item.name)}
                 >
-                  <div className="flex items-center space-x-3 min-w-0 flex-1">
+                  <div className="flex items-center space-x-1 min-w-0 flex-1 overflow-hidden">
                     <div
-                      className={`w-4 h-4 rounded-sm flex-shrink-0 transition-all duration-300 ${
+                      className={`w-3 h-3 rounded-sm flex-shrink-0 transition-all duration-300 ${
                         hoveredIndex === index ? 'scale-125' : 'scale-100'
                       }`}
                       style={{ backgroundColor: item.color }}
@@ -303,21 +332,13 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, totalBudget }) => {
                     </span>
                   </div>
 
-                  <div className="text-right flex-shrink-0 ml-4">
-                    <span
-                      className={`text-sm font-bold transition-colors duration-300 ${
-                        hoveredIndex === index ? 'text-white' : 'text-white'
-                      }`}
-                    >
+                  <div className="text-right flex-shrink-0 ml-2 min-w-0 max-w-32">
+                    <div className="text-sm font-bold text-white truncate">
                       {formatMoney(item.value)}
-                    </span>
-                    <span
-                      className={`text-xs ml-2 transition-colors duration-300 ${
-                        hoveredIndex === index ? 'text-gray-200' : 'text-gray-400'
-                      }`}
-                    >
+                    </div>
+                    <div className="text-xs text-gray-400">
                       {((item.value / totalBudget) * 100).toFixed(1)}%
-                    </span>
+                    </div>
                   </div>
                 </div>
               ))}
@@ -332,6 +353,26 @@ const DonutChart: React.FC<DonutChartProps> = ({ data, totalBudget }) => {
         position={legendTooltipPosition}
         isVisible={!!legendTooltipData && !!legendTooltipPosition}
       />
+
+      {/* Modal de détail de catégorie */}
+      {isModalOpen && selectedCategory && categoryDetails && (
+        <CategoryDetailModal
+          isOpen={isModalOpen}
+          onClose={() => setIsModalOpen(false)}
+          category={{
+            name: selectedCategory,
+            value: data.find(item => item.name === selectedCategory)?.value || 0,
+            color: data.find(item => item.name === selectedCategory)?.color || '#000',
+            totalBudget
+          }}
+          details={categoryDetails[selectedCategory] || []}
+          onNavigateToCategory={(categoryId) => {
+            console.log('🔧 [DonutChart] Navigation vers catégorie:', categoryId);
+            setIsModalOpen(false);
+            // Ici vous pourriez naviguer vers une page spécifique
+          }}
+        />
+      )}
     </div>
   );
 };

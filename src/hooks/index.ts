@@ -4,4 +4,6 @@ export { useBudgetsPerso } from './useBudgetsPerso';
 export { useObjectifs } from './useObjectifs';
 export { useWindowSize } from './useWindowSize';
 export { useMountIdle } from './useMountIdle';
-export { usePrefetchIdle } from './usePrefetchIdle'; 
+export { usePrefetchIdle } from './usePrefetchIdle';
+export { useCategoryDetails } from './useCategoryDetails';
+export { useCategoryNavigation } from './useCategoryNavigation'; 

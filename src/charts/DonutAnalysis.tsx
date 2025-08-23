@@ -12,6 +12,7 @@ import {
   Shield
 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
+import { CategoryDetailModal } from '@components/CategoryDetailModal'
 
 export type DonutSlice = {
   id: string
@@ -29,6 +30,8 @@ export type DonutAnalysisProps = {
   centerLabel?: string        // ex: "Total"
   formatValue?: (n: number) => string // défaut: format EUR fr-FR
   onSliceSelect?: (id: string) => void
+  categoryDetails?: Record<string, any[]>
+  onCategoryClick?: (categoryName: string) => void
 }
 
 // Map des icônes
@@ -51,10 +54,14 @@ export const DonutAnalysis: React.FC<DonutAnalysisProps> = ({
   slices,
   centerLabel = 'Total',
   formatValue,
-  onSliceSelect
+  onSliceSelect,
+  categoryDetails,
+  onCategoryClick
 }) => {
   const [activeIndex, setActiveIndex] = useState<number | null>(null)
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null)
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [isModalOpen, setIsModalOpen] = useState(false)
 
   // Formatage par défaut des valeurs
   const defaultFormatValue = useCallback((n: number) => {
@@ -94,6 +101,22 @@ export const DonutAnalysis: React.FC<DonutAnalysisProps> = ({
       onSliceSelect(slices[index].id)
     }
   }, [onSliceSelect, slices])
+
+  const handleCategoryClick = useCallback((categoryName: string) => {
+    console.log('🎯 [DonutAnalysis] Clic sur catégorie:', categoryName);
+    console.log('🎯 [DonutAnalysis] categoryDetails:', !!categoryDetails);
+    console.log('🎯 [DonutAnalysis] categoryDetails[categoryName]:', categoryDetails?.[categoryName]);
+    
+    if (onCategoryClick) {
+      onCategoryClick(categoryName);
+    } else if (categoryDetails && categoryDetails[categoryName]) {
+      console.log('🎯 [DonutAnalysis] Ouverture du modal pour:', categoryName);
+      setSelectedCategory(categoryName);
+      setIsModalOpen(true);
+    } else {
+      console.log('🎯 [DonutAnalysis] Aucune action - pas de données pour:', categoryName);
+    }
+  }, [onCategoryClick, categoryDetails])
 
   // Gestion du survol de la légende
   const handleLegendHover = useCallback((index: number) => {
@@ -210,12 +233,12 @@ export const DonutAnalysis: React.FC<DonutAnalysisProps> = ({
                       ? 'ring-2 ring-blue-500 bg-gray-700 border-blue-600' 
                       : 'hover:bg-gray-700/80 hover:border-gray-600'
                 }`}
-                onClick={() => handleClick(null, slice.index)}
+                onClick={() => handleCategoryClick(slice.label)}
                 onMouseEnter={() => handleLegendHover(slice.index)}
                 onMouseLeave={handleLegendLeave}
                 tabIndex={0}
                 role="button"
-                aria-label={`Sélectionner ${slice.label}`}
+                aria-label={`Voir détails de ${slice.label}`}
                 aria-current={isActive ? 'true' : 'false'}
               >
                 {/* Pastille de couleur */}
@@ -257,6 +280,26 @@ export const DonutAnalysis: React.FC<DonutAnalysisProps> = ({
             )
           })}
         </div>
+
+        {/* Modal de détail de catégorie */}
+        {isModalOpen && selectedCategory && categoryDetails && (
+          <CategoryDetailModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            category={{
+              name: selectedCategory,
+              value: slices.find(slice => slice.label === selectedCategory)?.value || 0,
+              color: slices.find(slice => slice.label === selectedCategory)?.color || '#000',
+              totalBudget: total
+            }}
+            details={categoryDetails[selectedCategory] || []}
+            onNavigateToCategory={(categoryId) => {
+              console.log('🎯 [DonutAnalysis] Navigation vers catégorie:', categoryId);
+              setIsModalOpen(false);
+              // Ici vous pourriez naviguer vers une page spécifique
+            }}
+          />
+        )}
       </div>
     </div>
   )

@@ -6,8 +6,9 @@ interface ChargeFixeRowProps {
   isEditing: boolean;
   error?: string;
   onEdit: (id: string) => void;
-  onSave: (id: string) => void;
+  onSave: (id: string, updatedData?: { label: string; montant: number }) => boolean;
   onDelete: (id: string) => void;
+  isMobileView?: boolean; // Nouveau prop pour distinguer mobile/desktop
 }
 
 /**
@@ -21,23 +22,11 @@ export const ChargeFixeRow = ({
   onEdit,
   onSave,
   onDelete,
+  isMobileView = false,
 }: ChargeFixeRowProps) => {
   const [label, setLabel] = useState(charge.label);
   const [montant, setMontant] = useState(charge.montant.toString());
   const [localError, setLocalError] = useState('');
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Détecter la taille d'écran
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Synchroniser avec les changements externes
   useEffect(() => {
@@ -46,19 +35,61 @@ export const ChargeFixeRow = ({
   }, [charge]);
 
   const handleSave = () => {
-    if (label.trim() === '') {
-      setLocalError('Le nom de la charge est requis');
-      return;
+    console.log('🔧 [ChargeFixeRow] Début de handleSave pour la charge:', charge);
+    console.log('🔧 [ChargeFixeRow] Valeurs actuelles - label:', label, 'montant:', montant);
+    
+    // Validation locale
+    const errors: string[] = [];
+    
+    if (!label || label.trim() === '') {
+      errors.push('Le nom de la charge est requis');
+      console.warn('⚠️ [ChargeFixeRow] Erreur de validation: label manquant');
     }
-
-    const montantNum = parseFloat(montant);
+    
+    const montantNum = Number(montant);
     if (isNaN(montantNum) || montantNum <= 0) {
-      setLocalError('Le montant doit être un nombre positif');
+      errors.push('Le montant doit être un nombre positif');
+      console.warn('⚠️ [ChargeFixeRow] Erreur de validation: montant invalide', montantNum);
+    }
+
+    if (errors.length > 0) {
+      console.error('❌ [ChargeFixeRow] Erreurs de validation locales:', errors);
+      setLocalError(errors.join(', '));
       return;
     }
 
-    onSave(charge.id);
-    setLocalError('');
+    console.log('✅ [ChargeFixeRow] Validation locale réussie');
+
+    // Mettre à jour les valeurs locales
+    const updatedCharge = {
+      ...charge,
+      label: label.trim(),
+      montant: montantNum
+    };
+    
+    console.log('🔧 [ChargeFixeRow] Charge mise à jour:', updatedCharge);
+
+    // Appeler la fonction de sauvegarde avec les données mises à jour
+    console.log('🔧 [ChargeFixeRow] Appel de onSave avec l\'ID:', charge.id, 'et données:', updatedCharge);
+    const success = onSave(charge.id, {
+      label: updatedCharge.label,
+      montant: updatedCharge.montant
+    });
+    console.log('🔧 [ChargeFixeRow] Résultat de onSave:', success);
+    
+    if (success === true) {
+      console.log('✅ [ChargeFixeRow] Sauvegarde réussie');
+      setLocalError('');
+      // Mettre à jour les valeurs locales avec les nouvelles données
+      setLabel(updatedCharge.label);
+      setMontant(updatedCharge.montant.toString());
+    } else if (success === false) {
+      console.log('❌ [ChargeFixeRow] Sauvegarde échouée');
+      // L'erreur sera gérée par le hook parent
+      setLocalError('');
+    } else {
+      console.warn('⚠️ [ChargeFixeRow] Résultat inattendu de onSave:', success);
+    }
   };
 
   const handleCancel = () => {
@@ -76,7 +107,7 @@ export const ChargeFixeRow = ({
   };
 
   // Layout mobile : carte empilée
-  if (isMobile) {
+  if (isMobileView) {
     if (isEditing) {
       return (
         <div className="bg-gray-700 border border-gray-600 rounded-lg p-4 mb-4">
@@ -92,7 +123,7 @@ export const ChargeFixeRow = ({
                 onChange={(e) => setLabel(e.target.value)}
                 onKeyDown={handleKeyPress}
                 className={`w-full px-3 py-2 bg-gray-600 border rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                  error ? 'border-red-500' : 'border-gray-500'
+                  (error || localError) ? 'border-red-500 ring-red-500' : 'border-gray-500'
                 }`}
                 placeholder="Nom de la charge"
                 autoFocus
@@ -113,7 +144,7 @@ export const ChargeFixeRow = ({
                   min="0"
                   step="0.01"
                   className={`w-full px-3 py-2 bg-gray-600 border rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    error ? 'border-red-500' : 'border-gray-500'
+                    (error || localError) ? 'border-red-500 ring-red-500' : 'border-gray-500'
                   }`}
                   placeholder="0.00"
                 />
@@ -179,11 +210,13 @@ export const ChargeFixeRow = ({
             </button>
           </div>
           
-          {/* Erreur locale */}
-          {localError && (
-            <p className="text-sm text-red-400 mt-2 text-center">
-              {localError}
-            </p>
+          {/* Affichage des erreurs */}
+          {(error || localError) && !(charge.label === '' && charge.montant === 0) && (
+            <div className="mt-2">
+              <p className="text-sm text-red-400 text-center">
+                {error || localError}
+              </p>
+            </div>
           )}
         </div>
       </div>
@@ -270,10 +303,13 @@ export const ChargeFixeRow = ({
           </button>
         </div>
         
-        {localError && (
-          <p className="text-sm text-red-400 mt-1">
-            {localError}
-          </p>
+        {/* Affichage des erreurs */}
+        {(error || localError) && !(charge.label === '' && charge.montant === 0) && (
+          <div className="mt-2">
+            <p className="text-sm text-red-400">
+              {error || localError}
+            </p>
+          </div>
         )}
       </td>
     </tr>

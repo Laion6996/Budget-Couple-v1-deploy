@@ -62,7 +62,7 @@ function App() {
       case 'demo-donut':
         return (
           <Suspense fallback={<PageSkeleton />}>
-            <DemoDonut />
+            <DemoDonut navigateTo={navigateTo} />
           </Suspense>
         );
       default:

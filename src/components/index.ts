@@ -7,4 +7,6 @@ export { default as DonutChart } from './DonutChart';
 export { ObjectifRow } from './ObjectifRow';
 export { AjouterObjectif } from './AjouterObjectif';
 export { MoneyDisplay, PercentageDisplay, useMoneyFormatting } from './MoneyDisplay';
-export { PWAInstallButton } from './PWAInstallButton'; 
+export { PWAInstallButton } from './PWAInstallButton';
+export { Toast, useToast } from './Toast';
+export { CategoryDetailModal } from './CategoryDetailModal'; 
