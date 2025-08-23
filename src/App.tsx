@@ -1,5 +1,4 @@
 import React, { useState, Suspense } from 'react';
-import { PWAInstallButton } from './components/PWAInstallButton';
 import { PageSkeleton } from './components/Skeleton';
 import { usePrefetchIdle } from './hooks/usePrefetchIdle';
 import { PrefetchDebug } from './components/PrefetchDebug';
@@ -233,9 +232,6 @@ function App() {
         {renderPageContent()}
       </main>
 
-      {/* Bouton d'installation PWA */}
-      <PWAInstallButton />
-      
       {/* Debug du prefetch (mode développement uniquement) */}
       <PrefetchDebug prefetchCompleted={prefetchCompleted} />
     </div>
