@@ -1,4 +1,5 @@
 import { useAppStore } from '../stores';
+import { usePwaUpdate } from '../pwa/usePwaUpdate';
 
 interface HeaderProps {
   currentPage: string;
@@ -7,6 +8,7 @@ interface HeaderProps {
 
 export const Header = ({ currentPage, onNavigate }: HeaderProps) => {
   const { reinitialiserDonnees } = useAppStore();
+  const { needRefresh, offlineReady, update } = usePwaUpdate();
 
   const handleResetDemo = () => {
     if (window.confirm('⚠️ Êtes-vous sûr de vouloir réinitialiser toutes les données ?\n\nCette action remettra les données de démonstration et supprimera toutes vos modifications.')) {
@@ -25,15 +27,33 @@ export const Header = ({ currentPage, onNavigate }: HeaderProps) => {
           <p className="text-gray-300 text-sm mt-1">
             Gestion de budget simplifiée
           </p>
-          {/* Bouton Réinitialiser démo */}
-          <button
-            onClick={handleResetDemo}
-            className="mt-4 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm transition-all duration-300 hover:scale-105"
-            title="Remettre les données de démonstration"
-            aria-label="Réinitialiser toutes les données de démonstration"
-          >
-            🔄 Réinitialiser démo
-          </button>
+          
+          {/* Boutons PWA et Réinitialiser démo */}
+          <div className="flex flex-wrap justify-center items-center gap-3 mt-4">
+            {offlineReady && (
+              <span className="text-xs rounded-md px-2 py-1 bg-emerald-600/30 text-emerald-300 border border-emerald-500/30">
+                🟢 Hors-ligne prêt
+              </span>
+            )}
+            {needRefresh && (
+              <button
+                onClick={update}
+                className="px-3 py-2 rounded-lg bg-sky-600 hover:bg-sky-500 text-white text-sm transition-colors hover:scale-105"
+                aria-label="Mettre à jour l'application"
+                title="Une nouvelle version est disponible"
+              >
+                🔄 Mettre à jour
+              </button>
+            )}
+            <button
+              onClick={handleResetDemo}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg transition-colors text-sm transition-all duration-300 hover:scale-105"
+              title="Remettre les données de démonstration"
+              aria-label="Réinitialiser toutes les données de démonstration"
+            >
+              🔄 Réinitialiser démo
+            </button>
+          </div>
         </div>
         
         {/* Navigation simple */}

@@ -9,6 +9,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       workbox: {
+        cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {
@@ -71,7 +72,7 @@ export default defineConfig({
         dir: 'ltr'
       },
       devOptions: {
-        enabled: true,
+        enabled: false,
         type: 'module'
       }
     }),
