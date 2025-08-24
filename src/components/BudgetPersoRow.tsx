@@ -5,6 +5,7 @@ interface BudgetPerso {
   nom: string;
   montant: number;
   depense: number;
+  dateLimite?: string;
 }
 
 interface BudgetPersoRowProps {
@@ -30,12 +31,14 @@ export const BudgetPersoRow = ({
   const [nom, setNom] = useState(budget.nom);
   const [montant, setMontant] = useState(budget.montant.toString());
   const [depense, setDepense] = useState(budget.depense.toString());
+  const [dateLimite, setDateLimite] = useState(budget.dateLimite || '');
 
   // Synchroniser avec les changements externes
   useEffect(() => {
     setNom(budget.nom);
     setMontant(budget.montant.toString());
     setDepense(budget.depense.toString());
+    setDateLimite(budget.dateLimite || '');
   }, [budget]);
 
   const handleSave = () => {
@@ -44,6 +47,7 @@ export const BudgetPersoRow = ({
       nom: nom.trim(),
       montant: parseFloat(montant) || 0,
       depense: parseFloat(depense) || 0,
+      dateLimite: dateLimite || undefined,
     };
     
     if (onSave(updatedBudget)) {
@@ -55,6 +59,7 @@ export const BudgetPersoRow = ({
     setNom(budget.nom);
     setMontant(budget.montant.toString());
     setDepense(budget.depense.toString());
+    setDateLimite(budget.dateLimite || '');
     onEdit(''); // Arrêter l'édition
   };
 
@@ -124,6 +129,16 @@ export const BudgetPersoRow = ({
           </div>
         </td>
         <td className="px-4 py-3">
+          <input
+            type="date"
+            value={dateLimite}
+            onChange={(e) => setDateLimite(e.target.value)}
+            onKeyDown={handleKeyPress}
+            className="w-full px-3 py-2 bg-gray-600 border border-gray-500 rounded text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            min={new Date().toISOString().split('T')[0]}
+          />
+        </td>
+        <td className="px-4 py-3">
           <div className="flex space-x-2">
             <button
               onClick={handleSave}
@@ -153,6 +168,15 @@ export const BudgetPersoRow = ({
       </td>
       <td className="px-4 py-3 text-white font-mono">
         {budget.depense.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}€
+      </td>
+      <td className="px-4 py-3 text-white text-sm">
+        {budget.dateLimite ? (
+          <span className="text-blue-300">
+            📅 {new Date(budget.dateLimite).toLocaleDateString('fr-FR')}
+          </span>
+        ) : (
+          <span className="text-gray-500">-</span>
+        )}
       </td>
       <td className="px-4 py-3">
         <div className="flex items-center space-x-3">

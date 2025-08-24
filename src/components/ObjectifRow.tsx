@@ -1,10 +1,12 @@
 import { useState, useRef } from 'react';
+import { DeadlineAlert } from './DeadlineAlert';
 
 interface Objectif {
   id: string;
   label: string;
   montantCible: number;
   dejaEpargne: number;
+  dateLimite?: string;
   historique?: { date: string; montant: number }[];
 }
 
@@ -97,6 +99,8 @@ export const ObjectifRow = ({ objectif, onIncrementer, onDelete }: ObjectifRowPr
           <p className="text-gray-400 text-sm mt-1">
             Objectif: {objectif.montantCible.toLocaleString('fr-FR', { minimumFractionDigits: 2 })}€
           </p>
+          {/* Alerte de deadline */}
+          <DeadlineAlert objectif={objectif} />
         </div>
         
         {/* Bouton supprimer */}

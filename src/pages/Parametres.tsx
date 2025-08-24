@@ -3,7 +3,11 @@ import { useAppStore } from '@/stores/useAppStore';
 import { useChargesFixes } from '@hooks/useChargesFixes';
 import { SalaireInput } from '@components/SalaireInput';
 import { ChargeFixeRow } from '@components/ChargeFixeRow';
+import { ConfirmModal } from '@components/ConfirmModal';
 import { useToast } from '@components/Toast';
+import { useSecureDelete } from '@hooks/useSecureDelete';
+import { SortableCollapsible } from '@components/SortableCollapsible';
+import { useSortableCollapsible } from '@hooks/useSortableCollapsible';
 import {
   sumRevenus,
   pctHoel,
@@ -17,6 +21,7 @@ import {
 
 /**
  * Page Paramètres - Configuration des salaires et charges fixes
+ * Améliorée avec suppression sécurisée et fonctionnalité Undo
  */
 export const Parametres: React.FC = () => {
   const { salaireHoel, salaireZelie, setSalaires, ajouterTransaction, moisActuel } = useAppStore();
@@ -32,6 +37,26 @@ export const Parametres: React.FC = () => {
   } = useChargesFixes();
   
   const { ToastContainer } = useToast();
+  
+  // Hook de suppression sécurisée pour les charges fixes
+  const {
+    isConfirmModalOpen,
+    itemToDelete,
+    prepareDelete,
+    confirmDelete,
+    cancelDelete
+  } = useSecureDelete<{ id: string; label: string; montant: number }>();
+
+  // Hook pour le tri et repli des charges fixes
+  const {
+    preferences: chargesPreferences,
+    handleSortChange: handleChargesSortChange
+  } = useSortableCollapsible({
+    storageKey: 'charges-fixes-preferences',
+    defaultSortField: 'nom',
+    defaultSortDirection: 'asc',
+    defaultCollapsed: false
+  });
   
   // Logs pour debug
   console.log('🔧 [Parametres] État actuel:', {
@@ -56,6 +81,24 @@ export const Parametres: React.FC = () => {
 
   const handleSalaireZelieChange = (value: number) => {
     setSalaires(salaireHoel, value);
+  };
+
+  // Gestionnaire de suppression sécurisée
+  const handleSecureDelete = (charge: { id: string; label: string; montant: number }) => {
+    console.log('🔧 [Parametres] handleSecureDelete appelé pour:', charge);
+    prepareDelete(charge);
+  };
+
+  // Gestionnaire de confirmation de suppression
+  const handleConfirmDelete = () => {
+    console.log('🔧 [Parametres] handleConfirmDelete appelé');
+    console.log('🔧 [Parametres] Fonction supprimerChargeFixe:', supprimerChargeFixe);
+    
+    // Appeler confirmDelete avec une fonction qui exécute la suppression
+    confirmDelete((id: string) => {
+      console.log('🔧 [Parametres] Exécution de la suppression pour l\'ID:', id);
+      supprimerChargeFixe(id);
+    });
   };
 
   // Fonction pour ajouter au snapshot
@@ -160,41 +203,79 @@ export const Parametres: React.FC = () => {
           </div>
         </div>
 
-        {/* Section Charges Fixes */}
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-            <h3 className="text-2xl font-semibold text-green-400">
-              🏠 Charges Fixes Mensuelles
-            </h3>
-            <button
-              onClick={ajouterChargeFixe}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center space-x-2 whitespace-nowrap"
-            >
-              <span>+</span>
-              <span>Ajouter ligne</span>
-            </button>
-          </div>
+        {/* Section Charges Fixes avec Tri et Repli */}
+        <SortableCollapsible
+          title="🏠 Charges Fixes Mensuelles"
+          items={chargesFixes}
+          sortFields={[
+            { key: 'nom', label: 'Nom', getValue: (charge) => charge.label },
+            { key: 'montant', label: 'Montant', getValue: (charge) => charge.montant }
+          ]}
+          defaultSortField="nom"
+          defaultSortDirection="asc"
+          defaultCollapsed={chargesPreferences.isCollapsed}
+          onSortChange={handleChargesSortChange}
+          className="mb-8"
+        >
+          {(sortedCharges) => (
+            <>
+              {/* Bouton d'ajout */}
+              <div className="flex justify-end mb-6">
+                <button
+                  onClick={ajouterChargeFixe}
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center space-x-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-green-500"
+                  aria-label="Ajouter une nouvelle charge fixe"
+                >
+                  <span>+</span>
+                  <span>Ajouter ligne</span>
+                </button>
+              </div>
 
-          {/* Tableau des charges - Responsive */}
-          <div className="overflow-hidden">
-            {/* Version Desktop : Tableau classique */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-600">
-                    <th className="px-4 py-3 text-left text-gray-300 font-semibold">
-                      Nom de la charge
-                    </th>
-                    <th className="px-4 py-3 text-left text-gray-300 font-semibold">
-                      Montant mensuel
-                    </th>
-                    <th className="px-4 py-3 text-center text-gray-300 font-semibold">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {chargesFixes.map((charge) => (
+              {/* Tableau des charges - Responsive */}
+              <div className="overflow-hidden">
+                {/* Version Desktop : Tableau classique */}
+                <div className="hidden md:block overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b border-gray-600">
+                        <th className="px-4 py-3 text-left text-slate-200 font-semibold">
+                          Nom de la charge
+                        </th>
+                        <th className="px-4 py-3 text-left text-slate-200 font-semibold">
+                          Montant mensuel
+                        </th>
+                        <th className="px-4 py-3 text-center text-slate-200 font-semibold">
+                          Actions
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedCharges.map((charge) => (
+                        <ChargeFixeRow
+                          key={charge.id}
+                          charge={charge}
+                          isEditing={editingId === charge.id}
+                          error={errors[charge.id]}
+                          onEdit={commencerEdition}
+                          onSave={sauvegarderCharge}
+                          onDelete={handleSecureDelete}
+                        />
+                      ))}
+                      
+                      {sortedCharges.length === 0 && (
+                        <tr>
+                          <td colSpan={3} className="px-4 py-8 text-center text-slate-400">
+                            Aucune charge fixe configurée. Cliquez sur "Ajouter ligne" pour commencer.
+                          </td>
+                        </tr>
+                      )}
+                    </tbody>
+                  </table>
+                </div>
+
+                {/* Version Mobile : Cartes empilées */}
+                <div className="md:hidden">
+                  {sortedCharges.map((charge) => (
                     <ChargeFixeRow
                       key={charge.id}
                       charge={charge}
@@ -202,44 +283,21 @@ export const Parametres: React.FC = () => {
                       error={errors[charge.id]}
                       onEdit={commencerEdition}
                       onSave={sauvegarderCharge}
-                      onDelete={supprimerChargeFixe}
-                    />
+                      onDelete={handleSecureDelete}
+                      isMobileView={true}
+                />
                   ))}
                   
-                  {chargesFixes.length === 0 && (
-                    <tr>
-                      <td colSpan={3} className="px-4 py-8 text-center text-gray-500">
-                        Aucune charge fixe configurée. Cliquez sur "Ajouter ligne" pour commencer.
-                      </td>
-                    </tr>
+                  {sortedCharges.length === 0 && (
+                    <div className="text-center text-slate-400 py-8">
+                      Aucune charge fixe configurée. Cliquez sur "Ajouter ligne" pour commencer.
+                    </div>
                   )}
-                </tbody>
-              </table>
-            </div>
-
-            {/* Version Mobile : Cartes empilées */}
-            <div className="md:hidden">
-              {chargesFixes.map((charge) => (
-                <ChargeFixeRow
-                  key={charge.id}
-                  charge={charge}
-                  isEditing={editingId === charge.id}
-                  error={errors[charge.id]}
-                  onEdit={commencerEdition}
-                  onSave={sauvegarderCharge}
-                  onDelete={supprimerChargeFixe}
-                  isMobileView={true}
-                />
-              ))}
-              
-              {chargesFixes.length === 0 && (
-                <div className="text-center text-gray-500 py-8">
-                  Aucune charge fixe configurée. Cliquez sur "Ajouter ligne" pour commencer.
                 </div>
-              )}
-            </div>
-          </div>
-        </div>
+              </div>
+            </>
+          )}
+        </SortableCollapsible>
 
         {/* Section Résumé des Versements */}
         <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-8">
@@ -328,6 +386,15 @@ export const Parametres: React.FC = () => {
       
       {/* Container des toasts */}
       <ToastContainer />
+
+      {/* Modal de confirmation de suppression */}
+      <ConfirmModal
+        open={isConfirmModalOpen}
+        onConfirm={handleConfirmDelete}
+        onCancel={cancelDelete}
+        itemName={itemToDelete?.label}
+        itemType="charge fixe"
+      />
     </div>
   );
 };

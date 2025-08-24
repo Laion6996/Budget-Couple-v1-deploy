@@ -91,17 +91,15 @@ export default defineConfig({
     target: 'es2020',
     minify: 'esbuild',
     cssCodeSplit: true,
-    rollupOptions: {
-      output: {
-        manualChunks: {
-          // Chunk séparé pour Recharts (bibliothèque de graphiques)
-          recharts: ['recharts'],
-          // Chunk séparé pour Lucide (icônes)
-          lucide: ['lucide-react'],
-          // Chunk séparé pour Zustand (state management)
-          'zustand': ['zustand']
+            rollupOptions: {
+          output: {
+            manualChunks: {
+              // Chunk séparé pour Recharts (bibliothèque de graphiques)
+              recharts: ['recharts'],
+              // Chunk séparé pour Zustand (state management)
+              'zustand': ['zustand']
+            }
+          }
         }
-      }
-    }
   }
 });

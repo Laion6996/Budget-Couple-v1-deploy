@@ -6,6 +6,7 @@ interface BudgetPerso {
   nom: string;
   montant: number;
   depense: number;
+  dateLimite?: string;
 }
 
 /**
@@ -29,17 +30,27 @@ export const useBudgetsPerso = (personne: 'hoel' | 'zelie') => {
       nom: budget.nom,
       montant: budget.montant,
       depense: budget.depense,
+      dateLimite: budget.dateLimite,
     }));
     setBudgets(budgetsPerso);
+    
+    // Nettoyer les budgets temporaires au changement de store
+    setEditingId(null);
   }, [storeBudgets]);
 
   // Fonction pour ajouter un nouveau budget
   const ajouterBudgetPerso = useCallback(() => {
+    // Générer un ID unique avec timestamp + random pour éviter les doublons
+    const timestamp = Date.now();
+    const random = Math.random().toString(36).substr(2, 9);
+    const uniqueId = `temp-${timestamp}-${random}`;
+    
     const nouveauBudget: BudgetPerso = {
-      id: `temp-${Date.now()}`,
+      id: uniqueId,
       nom: '',
       montant: 0,
       depense: 0,
+      dateLimite: undefined,
     };
     
     setBudgets(prev => [...prev, nouveauBudget]);
@@ -104,31 +115,28 @@ export const useBudgetsPerso = (personne: 'hoel' | 'zelie') => {
         nom: budget.nom,
         montant: budget.montant,
         depense: budget.depense,
+        dateLimite: budget.dateLimite,
         categorie: 'autre',
         mois: new Date().toISOString().slice(0, 7),
       }, personne);
       
-      // Remplacer l'ID temporaire par l'ID réel
-      const nouveauBudget = storeBudgets[storeBudgets.length - 1];
-      if (nouveauBudget) {
-        setBudgets(prev => 
-          prev.map(b => 
-            b.id === budget.id ? { ...b, id: nouveauBudget.id } : b
-          )
-        );
-      }
+      // Attendre un peu pour que le store se mette à jour, puis nettoyer
+      setTimeout(() => {
+        setBudgets(prev => prev.filter(b => !b.id.startsWith('temp-')));
+      }, 100);
     } else {
       // Modifier le budget existant
       modifierBudget(budget.id, {
         nom: budget.nom,
         montant: budget.montant,
         depense: budget.depense,
+        dateLimite: budget.dateLimite,
       });
     }
 
     setEditingId(null);
     return true;
-  }, [ajouterBudget, modifierBudget, storeBudgets, personne]);
+  }, [ajouterBudget, modifierBudget, personne]);
 
   // Calculer les totaux
   const totalBudget = budgets.reduce((sum, b) => sum + b.montant, 0);

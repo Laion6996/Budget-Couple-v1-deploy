@@ -1,9 +1,20 @@
-export { useDebounce } from './useDebounce';
-export { useChargesFixes } from './useChargesFixes';
+// Hooks de gestion des données
+export { useAppStore } from '@/stores/useAppStore';
 export { useBudgetsPerso } from './useBudgetsPerso';
+export { useChargesFixes } from './useChargesFixes';
 export { useObjectifs } from './useObjectifs';
-export { useWindowSize } from './useWindowSize';
+export { useCategoryDetails } from './useCategoryDetails';
+export { useCategoryNavigation } from './useCategoryNavigation';
+
+// Hooks utilitaires
+export { useDebounce } from './useDebounce';
 export { useMountIdle } from './useMountIdle';
 export { usePrefetchIdle } from './usePrefetchIdle';
-export { useCategoryDetails } from './useCategoryDetails';
-export { useCategoryNavigation } from './useCategoryNavigation'; 
+export { useWindowSize } from './useWindowSize';
+
+// Hooks de sécurité et UX
+export { useSecureDelete } from './useSecureDelete';
+export { useSortableCollapsible } from './useSortableCollapsible';
+
+// Hooks de notification
+export { useToast, toast } from './useToast'; 

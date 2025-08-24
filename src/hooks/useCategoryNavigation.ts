@@ -44,3 +44,4 @@ export const useCategoryNavigation = (navigateTo?: NavigateFunction) => {
 
   return { navigateToCategory };
 };
+

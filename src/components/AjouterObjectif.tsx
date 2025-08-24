@@ -1,7 +1,7 @@
 import { useState } from 'react';
 
 interface AjouterObjectifProps {
-  onAjouter: (label: string, montantCible: number) => void;
+  onAjouter: (label: string, montantCible: number, dateLimite?: string) => void;
 }
 
 /**
@@ -10,6 +10,7 @@ interface AjouterObjectifProps {
 export const AjouterObjectif = ({ onAjouter }: AjouterObjectifProps) => {
   const [label, setLabel] = useState('');
   const [montantCible, setMontantCible] = useState('');
+  const [dateLimite, setDateLimite] = useState('');
   const [isOpen, setIsOpen] = useState(false);
   const [error, setError] = useState('');
 
@@ -29,11 +30,12 @@ export const AjouterObjectif = ({ onAjouter }: AjouterObjectifProps) => {
     }
 
     // Ajouter l'objectif
-    onAjouter(label.trim(), montant);
+    onAjouter(label.trim(), montant, dateLimite || undefined);
     
     // Réinitialiser le formulaire
     setLabel('');
     setMontantCible('');
+    setDateLimite('');
     setError('');
     setIsOpen(false);
   };
@@ -41,6 +43,7 @@ export const AjouterObjectif = ({ onAjouter }: AjouterObjectifProps) => {
   const handleCancel = () => {
     setLabel('');
     setMontantCible('');
+    setDateLimite('');
     setError('');
     setIsOpen(false);
   };
@@ -100,6 +103,24 @@ export const AjouterObjectif = ({ onAjouter }: AjouterObjectifProps) => {
               €
             </div>
           </div>
+        </div>
+
+        {/* Date limite (optionnelle) */}
+        <div>
+          <label htmlFor="dateLimite" className="block text-gray-300 text-sm font-medium mb-2">
+            Date limite (optionnelle)
+          </label>
+          <input
+            type="date"
+            id="dateLimite"
+            value={dateLimite}
+            onChange={(e) => setDateLimite(e.target.value)}
+            className="w-full px-4 py-3 bg-gray-700 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+            min={new Date().toISOString().split('T')[0]}
+          />
+          <p className="text-xs text-gray-400 mt-1">
+            Définir une deadline aide à maintenir le cap et à calculer la progression théorique
+          </p>
         </div>
 
         {/* Message d'erreur */}

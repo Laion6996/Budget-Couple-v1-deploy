@@ -6,6 +6,7 @@ interface Objectif {
   label: string;
   montantCible: number;
   dejaEpargne: number;
+  dateLimite?: string;
   historique?: { date: string; montant: number }[];
 }
 
@@ -25,18 +26,19 @@ export const useObjectifs = () => {
       label: objectif.nom,
       montantCible: objectif.montantCible,
       dejaEpargne: objectif.dejaEpargne || 0,
+      dateLimite: objectif.dateLimite,
       historique: objectif.historique || [],
     }));
     setObjectifsLocaux(objectifsFormates);
   }, [objectifs]);
 
   // Fonction pour ajouter un nouvel objectif
-  const ajouterNouvelObjectif = useCallback((label: string, montantCible: number) => {
+  const ajouterNouvelObjectif = useCallback((label: string, montantCible: number, dateLimite?: string) => {
     const nouvelObjectif = {
       nom: label,
       montantCible,
       montantActuel: 0,
-      dateLimite: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
+      dateLimite: dateLimite || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString().slice(0, 10),
       priorite: 'moyenne' as const,
       description: `Objectif d'épargne: ${label}`,
       dejaEpargne: 0,

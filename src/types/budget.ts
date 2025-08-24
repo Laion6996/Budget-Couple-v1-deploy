@@ -17,6 +17,7 @@ export interface Budget {
   depense: number;
   categorie: 'transport' | 'loisirs' | 'alimentation' | 'autre';
   mois: string;
+  dateLimite?: string;
 }
 
 export interface Objectif {

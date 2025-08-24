@@ -2,6 +2,8 @@ import React from 'react';
 import { useObjectifs } from '@hooks/useObjectifs';
 import { ObjectifRow } from '@components/ObjectifRow';
 import { AjouterObjectif } from '@components/AjouterObjectif';
+import { SortableCollapsible } from '@components/SortableCollapsible';
+import { useSortableCollapsible } from '@hooks/useSortableCollapsible';
 
 /**
  * Page Objectifs - Gestion des objectifs d'épargne
@@ -9,13 +11,24 @@ import { AjouterObjectif } from '@components/AjouterObjectif';
 export const Objectifs: React.FC = () => {
   const { objectifs, ajouterNouvelObjectif, incrementerEpargne, supprimerObjectif, statistiques } = useObjectifs();
   
+  // Hook pour le tri et repli des objectifs
+  const {
+    preferences: objectifsPreferences,
+    handleSortChange: handleObjectifsSortChange
+  } = useSortableCollapsible({
+    storageKey: 'objectifs-preferences',
+    defaultSortField: 'nom',
+    defaultSortDirection: 'asc',
+    defaultCollapsed: false
+  });
+  
   // État local pour l'interface
   const [showAjouterObjectif, setShowAjouterObjectif] = React.useState(false);
   
   const toggleAjouterObjectif = () => setShowAjouterObjectif(!showAjouterObjectif);
   
-  const handleAjouterObjectif = (nom: string, montant: number) => {
-    ajouterNouvelObjectif(nom, montant);
+  const handleAjouterObjectif = (nom: string, montant: number, dateLimite?: string) => {
+    ajouterNouvelObjectif(nom, montant, dateLimite);
     setShowAjouterObjectif(false);
   };
 
@@ -92,58 +105,75 @@ export const Objectifs: React.FC = () => {
           )}
         </div>
 
-        {/* Liste des objectifs */}
-        <div className="bg-gray-800 p-6 rounded-lg border border-gray-700 mb-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 space-y-4 sm:space-y-0">
-            <h3 className="text-2xl font-semibold text-green-400">
-              🎯 Mes Objectifs
-            </h3>
-            <button
-              onClick={toggleAjouterObjectif}
-              className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center space-x-2 whitespace-nowrap"
-            >
-              <span>+</span>
-              <span>Nouvel objectif</span>
-            </button>
-          </div>
-
-          {/* Formulaire d'ajout */}
-          {showAjouterObjectif && (
-            <div className="mb-6">
-              <AjouterObjectif
-                onAjouter={handleAjouterObjectif}
-              />
-            </div>
-          )}
-
-          {/* Liste des objectifs */}
-          <div className="space-y-4">
-            {objectifs && objectifs.length > 0 ? (
-              objectifs.map((objectif) => (
-                <ObjectifRow
-                  key={objectif.id}
-                  objectif={objectif}
-                  onDelete={supprimerObjectif}
-                  onIncrementer={incrementerEpargne}
-                />
-              ))
-            ) : (
-              <div className="text-center py-12">
-                <div className="text-6xl mb-4">🎯</div>
-                <h4 className="text-xl font-semibold text-white mb-2">Aucun objectif configuré</h4>
-                <p className="text-gray-400 mb-6">
-                  Commencez par créer votre premier objectif d'épargne !
-                </p>
+        {/* Liste des objectifs avec Tri et Repli */}
+        <SortableCollapsible
+          title="🎯 Mes Objectifs"
+          items={objectifs}
+          sortFields={[
+            { key: 'nom', label: 'Nom', getValue: (objectif) => objectif.label },
+            { key: 'montant', label: 'Montant Cible', getValue: (objectif) => objectif.montantCible },
+            { key: 'restant', label: 'Reste à Épargner', getValue: (objectif) => objectif.montantCible - objectif.dejaEpargne },
+            { key: 'progression', label: 'Progression', getValue: (objectif) => (objectif.dejaEpargne / objectif.montantCible) * 100 }
+          ]}
+          defaultSortField="nom"
+          defaultSortDirection="asc"
+          defaultCollapsed={objectifsPreferences.isCollapsed}
+          onSortChange={handleObjectifsSortChange}
+          className="mb-8"
+        >
+          {(sortedObjectifs) => (
+            <>
+              {/* Bouton d'ajout */}
+              <div className="flex justify-end mb-6">
                 <button
                   onClick={toggleAjouterObjectif}
-                  className="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg transition-colors"
+                  className="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-lg transition-colors flex items-center space-x-2 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-green-500"
+                  aria-label="Ajouter un nouvel objectif d'épargne"
                 >
-                  🎯 Créer mon premier objectif
+                  <span>+</span>
+                  <span>Nouvel objectif</span>
                 </button>
               </div>
-            )}
-          </div>
-        </div>
+
+              {/* Formulaire d'ajout */}
+              {showAjouterObjectif && (
+                <div className="mb-6">
+                  <AjouterObjectif
+                    onAjouter={handleAjouterObjectif}
+                  />
+                </div>
+              )}
+
+              {/* Liste des objectifs triés */}
+              <div className="space-y-4">
+                {sortedObjectifs && sortedObjectifs.length > 0 ? (
+                  sortedObjectifs.map((objectif) => (
+                    <ObjectifRow
+                      key={objectif.id}
+                      objectif={objectif}
+                      onDelete={supprimerObjectif}
+                      onIncrementer={incrementerEpargne}
+                    />
+                  ))
+                ) : (
+                  <div className="text-center py-12">
+                    <div className="text-6xl mb-4">🎯</div>
+                    <h4 className="text-xl font-semibold text-white mb-2">Aucun objectif configuré</h4>
+                    <p className="text-slate-300 mb-6">
+                      Commencez par créer votre premier objectif d'épargne !
+                    </p>
+                    <button
+                      onClick={toggleAjouterObjectif}
+                      className="px-6 py-3 bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    >
+                      🎯 Créer mon premier objectif
+                    </button>
+                  </div>
+                )}
+              </div>
+            </>
+          )}
+        </SortableCollapsible>
 
         {/* Conseils */}
         <div className="bg-gradient-to-r from-blue-900 to-purple-900 p-6 rounded-xl border border-blue-700">

@@ -1,3 +1,8 @@
-// Export des utilitaires de calcul
+// Utilitaires de calcul
 export * from './calc';
-export * from './money'; 
+
+// Utilitaires de formatage monétaire
+export * from './money';
+
+// Utilitaires de validation
+export * from './validation'; 
